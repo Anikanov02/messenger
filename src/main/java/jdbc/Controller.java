@@ -90,7 +90,6 @@ public class Controller {
     private void startRefreshing() {
     	new Thread(new Refresher(this),"Refresher").start();
     }
-    
      
     @FXML
     void initialize() {
@@ -129,7 +128,7 @@ public class Controller {
 				    		Refresher.setTopMesId(topMesId);
 								
 							String s="";
-				    		ResultSet result=Main.getResult("select* from messages where idsender = "+idsender+" and idreciever = "+idreciever+" or(idsender = "+idreciever+" and idreciever = "+idsender+") order by messageid desc limit "+limit);
+				    		ResultSet result=Main.getResult("select*from(select* from messages where idsender = "+idsender+" and idreciever = "+idreciever+" or(idsender = "+idreciever+" and idreciever = "+idsender+") order by messageid desc limit "+limit+") t order by messageid asc");
 				    		ResultSet nameres;
 				    		while(result.next()) {
 				    			
@@ -141,10 +140,12 @@ public class Controller {
 				    			nameres.close();
 				    			s+=result.getString("messText")+"\n";
 				    			messageList.getItems().add(new Label(s));
-
 				    			s="";
 				    			
 				    		}
+				    		messageList.scrollTo(messageList.getItems().size());
+
+
 				    		result.close();
 				    		
 				    		Refresher.unable();
