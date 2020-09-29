@@ -6,12 +6,7 @@ import java.sql.SQLException;
 import java.util.ResourceBundle;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 
 public class Controller {
@@ -37,8 +32,9 @@ public class Controller {
     @FXML
     private ListView<Button> listView;
 
-    @FXML
-    private   TextArea textArea;
+	@FXML
+	private ListView<Label> messageList;
+
 
     @FXML
     private  TextArea textField;
@@ -55,16 +51,13 @@ public class Controller {
     public static boolean running;  
     
     public synchronized void refresh(String message) {
-    	int caret_position=textArea.getText().length();
-    	String mess="";
+
 		try {
 			ResultSet result =Main.getResult("select firstname,lastname from users where idusers = "+String.valueOf(idsender));
 			while(result.next()) {
-				mess+="REFRESHER:"+result.getString("firstname")+" "+result.getString("lastname")+": "+ message+"\n";
+				messageList.getItems().add(new Label("REFRESHER:"+result.getString("firstname")+" "+result.getString("lastname")+": "+ message+"\n"));
 			}
-			textArea.positionCaret(caret_position);
-			textArea.insertText(caret_position,mess);
-			
+
 		} catch (SQLException e) {
 			System.out.println("CONTROLLER refresh() METHOD ERROR");
 			e.printStackTrace();
@@ -119,7 +112,9 @@ public class Controller {
 					public void handle(MouseEvent mouseEvent) {
 						try {
 							Refresher.disable();
-							textArea.setText("");
+							messageList.getItems().removeAll(messageList.getItems());
+							messageList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+
 							if(idsender==-1) {
 				    			startRefreshing();
 //System.out.println("refreshing started");
@@ -145,7 +140,8 @@ public class Controller {
 				    			}
 				    			nameres.close();
 				    			s+=result.getString("messText")+"\n";
-				    			textArea.insertText(0,s);
+				    			messageList.getItems().add(new Label(s));
+
 				    			s="";
 				    			
 				    		}
@@ -170,7 +166,7 @@ public class Controller {
              
         	  String s=textField.getText();
         	  if(s.compareTo("")!=0) {
-        	 textArea.insertText(textArea.getText().length(),name+" "+lastname+": "+ s+"\n"); 
+        	 messageList.getItems().add(new Label(name+" "+lastname+": "+ s+"\n"));
         	 textField.deleteText(0,textField.getText().length());
         	 String Query="CALL p_SendMessage("+"'"+s+"'"+","+idreciever+","+idsender+");";
         	 Main.setMessage(Query);
